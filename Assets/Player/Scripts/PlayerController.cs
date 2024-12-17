@@ -66,6 +66,10 @@ namespace Gaming.FinalCharacterController
 
         private void Awake()
         {
+            _cameraRotation = Vector2.zero;
+            _currentYaw = 0f;
+            _targetYaw = 0f;
+
             _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
             _playerActions = GetComponent<PlayerActions>();
             _itemManager = GetComponent<ItemManager>();
@@ -284,12 +288,19 @@ namespace Gaming.FinalCharacterController
             _isMoving = _characterController.velocity.magnitude > _movementThreshold;
 
             _cameraRotation.x += _playerLocomotionInput.LookInput.x * lookSenseH;
-            _cameraRotation.y = Mathf.Clamp(_cameraRotation.y + _playerLocomotionInput.LookInput.y * lookSenseV, -lookLimitV, lookLimitV);
+            _cameraRotation.y = Mathf.Clamp(
+                _cameraRotation.y + _playerLocomotionInput.LookInput.y * lookSenseV,
+                -lookLimitV,
+                lookLimitV
+            );
 
             _targetYaw = _cameraRotation.x;
             _currentYaw = Mathf.SmoothDampAngle(_currentYaw, _targetYaw, ref _currentRotationVelocity.x, _rotationSmoothTime);
 
-            _cameraTarget.rotation = Quaternion.Euler(-_cameraRotation.y, _currentYaw, 0f);
+            float clampedYaw = Mathf.Repeat(_currentYaw, 360f);
+            float clampedPitch = Mathf.Clamp(-_cameraRotation.y, -lookLimitV, lookLimitV);
+
+            _cameraTarget.rotation = Quaternion.Euler(clampedPitch, clampedYaw, 0f);
         }
 
         #endregion

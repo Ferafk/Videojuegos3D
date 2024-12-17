@@ -113,6 +113,11 @@ public class EnemyBehab : MonoBehaviour
         }
 
         CheckPlayerProximity();
+
+        if (_healthSlider != null)
+        {
+            _healthSlider.value = _currentHealth;
+        }
     }
 
     private void FindInitialDoor()

@@ -1,13 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class Menu : MonoBehaviour
 {
     [Header("Canvas References")]
     public GameObject levelCanvas;
     public GameObject helpCanvas;
+
+    public TextMeshProUGUI version;
+
+    private void Start()
+    {
+        version.text = $"Versión: {Application.version}";
+    }
 
     public void ShowLevelsCanvas()
     {

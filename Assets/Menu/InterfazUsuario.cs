@@ -9,16 +9,29 @@ public class InterfazUsuario : MonoBehaviour
 {
 
     public GameObject pauseCanvas;
+    public GameObject ganasteCanvas;
 
     private bool isPaused = false;
 
     public ItemManager itemManager;
-    private ItemPickupData itemPickupData;
+    public CrateBreak crateBreak;
 
     public TextMeshProUGUI itemName;
     public TextMeshProUGUI itemCantidad;
 
+    void Start()
+    {
+        // Asegurar que el juego comience correctamente desbloqueado
+        InitializeGameState();
+    }
+
     void Update()
+    {
+        HandlePauseInput();
+        UpdateUI();
+    }
+
+    private void HandlePauseInput()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -31,7 +44,10 @@ public class InterfazUsuario : MonoBehaviour
                 PauseGame();
             }
         }
+    }
 
+    private void UpdateUI()
+    {
         if (itemManager.currentItemAmount > 0)
         {
             itemName.text = itemManager.currentProjectileName;
@@ -44,11 +60,20 @@ public class InterfazUsuario : MonoBehaviour
         }
     }
 
+    private void InitializeGameState()
+    {
+        // Asegurar que el juego esté activo al iniciar
+        isPaused = false;
+        Time.timeScale = 1f;
+        LockCursor();
+        pauseCanvas.SetActive(false);
+        if (ganasteCanvas != null) ganasteCanvas.SetActive(false);
+    }
+
     public void PauseGame()
     {
         Time.timeScale = 0f;
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
+        UnlockCursor();
         isPaused = true;
         Debug.Log("Juego pausado");
         pauseCanvas.SetActive(true);
@@ -57,20 +82,19 @@ public class InterfazUsuario : MonoBehaviour
     public void ResumeGame()
     {
         Time.timeScale = 1f;
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        LockCursor();
         isPaused = false;
         Debug.Log("Juego reanudado");
         pauseCanvas.SetActive(false);
     }
 
-    void OnEnable()
+    private void LockCursor()
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    void OnDisable()
+    private void UnlockCursor()
     {
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
@@ -78,6 +102,28 @@ public class InterfazUsuario : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
+        UnlockCursor();
         SceneManager.LoadScene("MainMenu");
+    }
+
+    public void Ganaste()
+    {
+        PauseGame();
+        ganasteCanvas.SetActive(true);
+    }
+
+    public void Perdiste()
+    {
+        UnlockCursor();
+        SceneManager.LoadScene("Nivel1");
+    }
+
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }
