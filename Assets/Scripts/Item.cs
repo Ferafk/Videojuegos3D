@@ -10,15 +10,11 @@ public class Item : MonoBehaviour
     public float floatSpeed = 1f;
     public float rotationSpeed = 30f;
 
-    [Header("Attraction Parameters")]
-    public float attractionRadius = 3f;
-    public float attractionSpeed = 5f;
-
     private Vector3 startPosition;
-    private bool isBeingPickedUp = false;
+
+    public bool isReceta;
 
     public ItemType ingredientType;
-
 
     void Start()
     {
@@ -31,13 +27,6 @@ public class Item : MonoBehaviour
         transform.position = startPosition + Vector3.up * yOffset;
 
         transform.RotateAround(transform.position, Vector3.up, rotationSpeed * Time.deltaTime);
-    }
-
-    // Método opcional para depuración visual del radio de atracción
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, attractionRadius);
     }
 
 }

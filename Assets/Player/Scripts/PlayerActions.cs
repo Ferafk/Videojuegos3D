@@ -11,6 +11,7 @@ public class PlayerActions : MonoBehaviour
 
     private PlayerLocomotionInput _playerLocomotionInput;
     private PlayerSoundController _soundController;
+    private ItemManager _itemManager;
 
     private float footstepDelay = 0.5f;
     private float footstepTimer;
@@ -21,6 +22,7 @@ public class PlayerActions : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
         _soundController = GetComponent<PlayerSoundController>();
+        _itemManager = GetComponent<ItemManager>();
         footstepTimer = footstepDelay;
     }
 
@@ -40,11 +42,6 @@ public class PlayerActions : MonoBehaviour
         {
             animator.SetBool("Move", false);
         }
-        
-        /*if (_playerLocomotionInput.JumpPressed)
-        {
-            
-        }*/
 
     }
 
@@ -74,13 +71,26 @@ public class PlayerActions : MonoBehaviour
     
     public void Shoot()
     {
-        animator.SetTrigger("Attack");
-        _soundController.PlayShootSound();
+        if (_itemManager.currentItemType != null)
+        {
+            if (_itemManager.currentItemAmount > 0)
+            {
+                animator.SetTrigger("Attack");
+                _soundController.PlayShootSound();
 
-        GameObject bullet = objectPool.GetPooledObject();
-        bullet.transform.position = firepoint.position;
-        bullet.transform.rotation = firepoint.rotation;
-        bullet.SetActive(true);
+                GameObject bullet = objectPool.GetPooledObject();
+                bullet.transform.position = firepoint.position;
+                bullet.transform.rotation = firepoint.rotation;
+                bullet.SetActive(true);
+
+                _itemManager.currentItemAmount--;
+            
+            }
+            else
+            {
+                _itemManager.ClearItem();
+            }
+        }        
     }
 
     public void Eat()

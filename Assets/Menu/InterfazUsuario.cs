@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class InterfazUsuario : MonoBehaviour
 {
@@ -9,6 +11,12 @@ public class InterfazUsuario : MonoBehaviour
     public GameObject pauseCanvas;
 
     private bool isPaused = false;
+
+    public ItemManager itemManager;
+    private ItemPickupData itemPickupData;
+
+    public TextMeshProUGUI itemName;
+    public TextMeshProUGUI itemCantidad;
 
     void Update()
     {
@@ -22,6 +30,17 @@ public class InterfazUsuario : MonoBehaviour
             {
                 PauseGame();
             }
+        }
+
+        if (itemManager.currentItemAmount > 0)
+        {
+            itemName.text = itemManager.currentProjectileName;
+            itemCantidad.text = itemManager.currentItemAmount.ToString();
+        }
+        else
+        {
+            itemName.text = "Municiones";
+            itemCantidad.text = "0";
         }
     }
 

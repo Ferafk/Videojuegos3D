@@ -11,6 +11,8 @@ public class Bala : MonoBehaviour
     private float lifeTimer;
     private Vector3 shootDir;
 
+    public ItemType itemType;
+
     private void OnEnable()
     {
         lifeTimer = lifeTime;

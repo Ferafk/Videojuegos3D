@@ -31,7 +31,7 @@ namespace Gaming.FinalCharacterController
         public float lookSenseV = 0.1f;
         public float lookLimitV = 89f;
 
-        public bool tieneComida;
+        public bool tieneComida; // Se activa cuando ha recogido una receta
 
         [Header("Particle System")]
         public ParticleSystem jumpParticles;
@@ -39,6 +39,7 @@ namespace Gaming.FinalCharacterController
 
         private PlayerLocomotionInput _playerLocomotionInput;
         private PlayerActions _playerActions;
+        private ItemManager _itemManager;
         private Vector2 _cameraRotation = Vector2.zero;
 
         private bool isJumping = false;
@@ -61,13 +62,13 @@ namespace Gaming.FinalCharacterController
         private Vector3 _lastMovementDirection;
         private float _currentRotationAngle;
         private float _rotationVelocity;
-
         #endregion
 
         private void Awake()
         {
             _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
             _playerActions = GetComponent<PlayerActions>();
+            _itemManager = GetComponent<ItemManager>();
             InitializeCamera();
         }
 
@@ -84,6 +85,8 @@ namespace Gaming.FinalCharacterController
             {
                 PlayJumpParticles();
             }
+
+            tieneComida = _itemManager.EsReceta;
 
             wasGrounded = isGrounded;
 
@@ -211,48 +214,48 @@ namespace Gaming.FinalCharacterController
         }*/
 
         private void HandleVerticalMovement()
-{
-    // Si está en el suelo, resetear la velocidad vertical
-    if (isGrounded)
-    {
-        // Añadir un pequeño offset para mantener el personaje pegado al suelo
-        if (_verticalVelocity < 0)
-            _verticalVelocity = -0.1f;
+        {
+            // Si está en el suelo, resetear la velocidad vertical
+            if (isGrounded)
+            {
+                // Añadir un pequeño offset para mantener el personaje pegado al suelo
+                if (_verticalVelocity < 0)
+                    _verticalVelocity = -0.1f;
         
-        isJumping = false;
-        isFalling = false;
-    }
-    else
-    {
-        // Aplicar gravedad de forma más natural
-        // Multiplicar por un factor mayor para una caída más rápida
-        _verticalVelocity -= gravity * 2f * Time.deltaTime;
-    }
+                isJumping = false;
+                isFalling = false;
+            }
+            else
+            {
+                // Aplicar gravedad de forma más natural
+                // Multiplicar por un factor mayor para una caída más rápida
+                _verticalVelocity -= gravity * 2f * Time.deltaTime;
+            }
 
-    // Gestión de estados de salto y caída
-    if (!isGrounded && _characterController.velocity.y > 0f && !isJumping)
-    {
-        _playerActions.Jumping();
-        isJumping = true;
-        isFalling = false;
-    }
-    else if (!isGrounded && _characterController.velocity.y <= 0f && !isFalling)
-    {
-        _playerActions.Falling();
-        isFalling = true;
-        isJumping = false;
-    }
+            // Gestión de estados de salto y caída
+            if (!isGrounded && _characterController.velocity.y > 0f && !isJumping)
+            {
+                _playerActions.Jumping();
+                isJumping = true;
+                isFalling = false;
+            }
+            else if (!isGrounded && _characterController.velocity.y <= 0f && !isFalling)
+            {
+                _playerActions.Falling();
+                isFalling = true;
+                isJumping = false;
+            }
 
-    // Salto
-    if (_playerLocomotionInput.JumpPressed && isGrounded)
-    {
-        // Usar una fórmula de salto más precisa
-        _verticalVelocity = Mathf.Sqrt(jumpSpeed * 2f * gravity);
-    }
+            // Salto
+            if (_playerLocomotionInput.JumpPressed && isGrounded)
+            {
+                // Usar una fórmula de salto más precisa
+                _verticalVelocity = Mathf.Sqrt(jumpSpeed * 2f * gravity);
+            }
 
-    // Limitar la velocidad de caída para evitar caídas extremadamente rápidas
-    _verticalVelocity = Mathf.Max(_verticalVelocity, -terminalVelocity);
-}
+            // Limitar la velocidad de caída para evitar caídas extremadamente rápidas
+            _verticalVelocity = Mathf.Max(_verticalVelocity, -terminalVelocity);
+        }
 
         private void LateUpdate()
         {

@@ -4,22 +4,41 @@ using UnityEngine;
 
 public class ObjectPool : MonoBehaviour
 {
+    public ItemManager player;
     public GameObject objectPrefab;
-    public int poolSize = 10;
     public List<GameObject> pool;
-
+    public int poolSize;
+    public bool hasItems;
 
     void Start()
     {
         pool = new List<GameObject>();
 
-        for (int i = 0; i < poolSize; i++)
-        {
-            GameObject obj = Instantiate(objectPrefab);
-            obj.SetActive(false);
-            pool.Add(obj);
-        }
+    }
 
+    private void Update()
+    {
+        hasItems = player.currentItemAmount > 0 ? true : false;
+    }
+
+    public void UpdateProjectile()
+    {
+        objectPrefab = player.currentProjectilPrefab;
+
+        if (objectPrefab != null)
+        {
+            for (int i = 0; i < poolSize; i++)
+            {
+                GameObject obj = Instantiate(objectPrefab);
+                obj.SetActive(false);
+                pool.Add(obj);
+            }
+        }
+        else
+        {
+            pool.Clear();
+        }
+        
     }
 
     public GameObject GetPooledObject()
