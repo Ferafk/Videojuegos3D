@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gaming.FinalCharacterController;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum EnemyState
 {
@@ -11,7 +12,8 @@ public enum EnemyState
     AttackingBox,
     Stunned,
     ChasingPlayer,
-    Idle
+    Idle,
+    ExitingLevel
 }
 
 public class EnemyBehab : MonoBehaviour
@@ -27,18 +29,24 @@ public class EnemyBehab : MonoBehaviour
     [SerializeField] private int playerDamage = 1;
     [SerializeField] private float stunDuration = 10f;
     [SerializeField] private float attackCooldown = 0.7f;
+    [SerializeField] private float maxHealth = 100f;
+
+
+    [Header("Health Bar")]
+    [SerializeField] private GameObject healthBarPrefab;
+    [SerializeField] private Vector3 healthBarOffset = new Vector3(0, 2f, 0);
+
     private float _nextAttackTime = 0f;
-
-
     private EnemyState _currentState = EnemyState.EnteringLevel;
     private Transform _door;
     private Transform _targetBox;
     private Transform _player;
 
     private int _shootCount = 0;
-    private float _currentHealth = 100f;
-    private bool _isStunned = false;
+    [SerializeField] private float _currentHealth = 100f;
+    public bool _isStunned = false;
     private Animator _animator;
+    private Slider _healthSlider;
 
 
     private void Awake()
@@ -46,11 +54,44 @@ public class EnemyBehab : MonoBehaviour
         FindInitialDoor();
         _player = GameObject.FindGameObjectWithTag("Player")?.transform;
         _animator = GetComponent<Animator>();
+
+        _currentHealth = maxHealth;
+        InitializeHealthBar();
+    }
+
+    private void InitializeHealthBar()
+    {
+        if (healthBarPrefab != null)
+        {
+            GameObject healthBarObject = Instantiate(healthBarPrefab, transform);
+            healthBarObject.transform.localPosition = healthBarOffset;
+            _healthSlider = healthBarObject.GetComponent<Slider>();
+
+            if (_healthSlider != null)
+            {
+                _healthSlider.maxValue = maxHealth;
+                _healthSlider.value = _currentHealth;
+            }
+        }
     }
 
     void Update()
     {
-         switch (_currentState)
+        if (_currentState == EnemyState.ChasingPlayer)
+        {
+            PlayerController playerController = _player.GetComponent<PlayerController>();
+            if (playerController != null && !playerController.tieneComida)
+            {
+                _currentState = EnemyState.SearchingBoxes;
+            }
+        }
+
+        if (_currentHealth <= 0)
+        {
+            _currentState = EnemyState.ExitingLevel;
+        }
+
+        switch (_currentState)
         {
             case EnemyState.EnteringLevel:
                 MoveTowardsDoor();
@@ -65,6 +106,9 @@ public class EnemyBehab : MonoBehaviour
                 break;
             case EnemyState.ChasingPlayer:
                 ChaseAndAttackPlayer();
+                break;
+            case EnemyState.ExitingLevel:
+                MoveTowardsExit();
                 break;
         }
 
@@ -96,6 +140,21 @@ public class EnemyBehab : MonoBehaviour
         }
     }
 
+    private void MoveTowardsExit()
+    {
+        if (_door == null) return;
+
+        _animator.SetBool("Move", true);
+        Vector3 targetPosition = _door.position;
+        transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+        LookAtMovementDirection(targetPosition);
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.5f)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     private void FindNearestBox()
     {
         Collider[] boxes = Physics.OverlapSphere(transform.position, detectionRadius, LayerMask.GetMask("Boxes"));
@@ -103,7 +162,7 @@ public class EnemyBehab : MonoBehaviour
         if (boxes.Length > 0)
         {
             _targetBox = GetClosestBox(boxes);
-            Debug.Log("Llendo a caja");
+            Debug.Log("Yendo a caja");
             _currentState = EnemyState.AttackingBox;
         }
     }
@@ -143,7 +202,6 @@ public class EnemyBehab : MonoBehaviour
 
         if (Vector3.Distance(transform.position, _targetBox.position) <= attackRange)
         {
-
             if (Time.time >= _nextAttackTime)
             {
                 Breakable damageable = _targetBox.GetComponent<Breakable>();
@@ -154,16 +212,13 @@ public class EnemyBehab : MonoBehaviour
                     _animator.SetBool("Attack", true);
                     damageable.Damage(boxDamage);
 
-                    // Establecer el próximo tiempo de ataque
                     _nextAttackTime = Time.time + attackCooldown;
 
-                    // Verificar si la caja fue destruida
                     if (damageable.IsDestroyed())
                     {
                         _currentState = EnemyState.SearchingBoxes;
                         _targetBox = null;
                     }
-                    // Si no está destruida, seguir en estado de ataque
                     else
                     {
                         _currentState = EnemyState.AttackingBox;
@@ -256,16 +311,21 @@ public class EnemyBehab : MonoBehaviour
         if (hasFood)
         {
             _currentHealth -= damageAmount;
-            if (_currentHealth <= 0)
+
+            // Actualizar barra de salud
+            if (_healthSlider != null)
             {
-                Die();
+                _healthSlider.value = _currentHealth;
             }
+
+            
         }
         else
         {
             _shootCount++;
             if (_shootCount >= 3)
             {
+                _currentHealth--;
                 StartCoroutine(StunRoutine());
             }
         }
@@ -275,7 +335,16 @@ public class EnemyBehab : MonoBehaviour
     {
         _isStunned = true;
         _currentState = EnemyState.Stunned;
-        yield return new WaitForSeconds(stunDuration);
+
+        // Animación de giro en el sitio
+        float stunRotationTime = 0;
+        while (stunRotationTime < stunDuration)
+        {
+            transform.Rotate(Vector3.up, 360f * Time.deltaTime);
+            stunRotationTime += Time.deltaTime;
+            yield return null;
+        }
+
         _isStunned = false;
         _shootCount = 0;
         _currentState = EnemyState.SearchingBoxes;
@@ -289,11 +358,6 @@ public class EnemyBehab : MonoBehaviour
             Quaternion lookRotation = Quaternion.LookRotation(lookDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
         }
-    }
-
-    private void Die()
-    {
-        Destroy(gameObject);
     }
 
 }

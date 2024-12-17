@@ -12,11 +12,22 @@ public class Bala : MonoBehaviour
     private Vector3 shootDir;
 
     public ItemType itemType;
+    public float damage = 5f;
+    public bool isfood;
 
     private void OnEnable()
     {
         lifeTimer = lifeTime;
         shootDir = transform.forward;
+
+        if (itemType == ItemType.Galleta || itemType == ItemType.Pastel)
+        {
+            isfood = true;
+        }
+        else
+        {
+            isfood = false;
+        }
     }
 
     private void Update()
@@ -42,7 +53,7 @@ public class Bala : MonoBehaviour
         if (collision.gameObject.CompareTag("Enemy"))
         {
             EnemyBehab enemyB = collision.gameObject.GetComponent<EnemyBehab>();
-            enemyB.ReceiveDamage(1, false);
+            enemyB.ReceiveDamage(damage, isfood);
         }
     }
 

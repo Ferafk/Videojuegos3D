@@ -102,6 +102,7 @@ MonoBehaviour:
   lifeTime: 3
   rotationspeed: 720
   itemType: 6
+  damage: 50
 --- !u!65 &6120059498211138059
 BoxCollider:
   m_ObjectHideFlags: 0
