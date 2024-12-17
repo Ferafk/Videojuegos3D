@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6498882536068991688}
   - component: {fileID: 3543296616786438793}
   - component: {fileID: -6452805617393638486}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Crate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -98,6 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1562c817f5550d349838365cbcd93dbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 1
 --- !u!65 &3543296616786438793
 BoxCollider:
   m_ObjectHideFlags: 0

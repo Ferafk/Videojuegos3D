@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class Breakable : MonoBehaviour
 {
+    public int health = 1;
 
-    private void OnCollisionEnter(Collision collision)
+    public void TakeDamage()
     {
-        if (collision.gameObject.CompareTag("Bullet"))
-        {
-            collision.gameObject.SetActive(false);
-            Destroy(gameObject);
-        }
+        health --;
+    }
+
+    public void Damage(int damage)
+    {
+        health -= damage;
     }
 
 }

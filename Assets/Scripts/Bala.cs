@@ -28,4 +28,20 @@ public class Bala : MonoBehaviour
 
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Breakable"))
+        {
+            Breakable tobreak = collision.gameObject.GetComponent<Breakable>();
+            tobreak.TakeDamage();
+            lifeTimer = 0;
+        }
+
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            EnemyBehab enemyB = collision.gameObject.GetComponent<EnemyBehab>();
+            enemyB.ReceiveDamage(1, false);
+        }
+    }
+
 }
